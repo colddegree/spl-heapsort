@@ -38,3 +38,8 @@ $ IMAGE_TAG=$(uuidgen | tr "[:upper:]" "[:lower:]") && \
   trap 'kill $SERVER_PID; cleanup; trap - SIGINT; kill $WAIT_PID' SIGINT ; \
   wait $WAIT_PID
 ```
+
+### Run BDD tests
+```shell script
+$ docker run --rm -it -v $PWD:/app -w "/app" php:8.0.11-cli php ./vendor/bin/behat
+```
