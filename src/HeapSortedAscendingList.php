@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace ColdDegree;
 
+/**
+ * @see \ColdDegree\Tests\HeapSortedAscendingListTest
+ */
 final class HeapSortedAscendingList implements MyList
 {
     private MyList $origin;

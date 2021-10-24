@@ -6,6 +6,12 @@ use ColdDegree\ConstantList;
 use ColdDegree\HeapSortedAscendingList;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @covers \ColdDegree\HeapSortedAscendingList
+ * @covers \ColdDegree\ConstantList
+ * @covers \ColdDegree\MyList
+ * @codeCoverageIgnore
+ */
 class HeapSortedAscendingListTest extends TestCase
 {
     public function testSortingInts(): void
