@@ -16,41 +16,25 @@ $ IMAGE_TAG=$(uuidgen | tr "[:upper:]" "[:lower:]") && \
   FREE_PORT="$(for port in $(seq 4444 65000); do; echo -ne "\035" | telnet 127.0.0.1 $port > /dev/null 2>&1; [ $? -eq 1 ] && echo "$port" && break; done;)" && \
   REPORT_HOST=127.0.0.1:$FREE_PORT && \
 
-  runner_build() {
-    docker build --tag=$IMAGE_TAG ./docker/php/
+  build() {
+    docker build --tag=$IMAGE_TAG ./docker/php/ && \
+      docker run --rm -it -v $PWD:/app -w "/app" -e XDEBUG_MODE=coverage $IMAGE_TAG \
+        php ./vendor/bin/phpunit --coverage-html $REPORT_TARGET
   } && \
-
-  runner_cleanup() {
-    docker image rm $IMAGE_TAG
-  } && \
-
-  report_build() {
-    docker run --rm -it -v $PWD:/app -w "/app" -e XDEBUG_MODE=coverage $IMAGE_TAG \
-      php ./vendor/bin/phpunit --coverage-html $REPORT_TARGET
-  } && \
-
-  report_cleanup() {
-    rm -rf $REPORT_TARGET
-  } && \
-
-  runner_build && \
-  report_build && \
-
-  sleep 86400 & \
-  WAIT_PID=$! && \
-
-  php -S $REPORT_HOST -t $REPORT_TARGET > /dev/null 2>&1 & \
-  SERVER_PID=$! && \
-  open "http://$REPORT_HOST" && \
-  echo 'Press Ctrl+C to close report' && \
 
   cleanup() {
-    kill $SERVER_PID
-    report_cleanup
-    runner_cleanup
-    trap - SIGINT
-    kill $WAIT_PID
+    docker image rm $IMAGE_TAG && \
+      rm -rf $REPORT_TARGET
   } && \
-  trap cleanup SIGINT ; \
+
+  build && \
+
+  php -S $REPORT_HOST -t $REPORT_TARGET > /dev/null 2>&1 & SERVER_PID=$! && \
+
+  echo "\nOpen http://$REPORT_HOST to see report" && \
+  echo 'Press Ctrl+C to close report' && \
+
+  sleep 86400 & WAIT_PID=$! && \
+  trap 'kill $SERVER_PID; cleanup; trap - SIGINT; kill $WAIT_PID' SIGINT ; \
   wait $WAIT_PID
 ```
