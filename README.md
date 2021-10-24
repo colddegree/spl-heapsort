@@ -36,12 +36,21 @@ $ IMAGE_TAG=$(uuidgen | tr "[:upper:]" "[:lower:]") && \
   runner_build && \
   report_build && \
 
+  sleep 86400 & \
+  WAIT_PID=$! && \
+
   php -S $REPORT_HOST -t $REPORT_TARGET > /dev/null 2>&1 & \
   SERVER_PID=$! && \
   open "http://$REPORT_HOST" && \
   echo 'Press Ctrl+C to close report' && \
 
-  cleanup() { kill $SERVER_PID; report_cleanup; runner_cleanup; trap - SIGINT; } && \
+  cleanup() {
+    kill $SERVER_PID
+    report_cleanup
+    runner_cleanup
+    trap - SIGINT
+    kill $WAIT_PID
+  } && \
   trap cleanup SIGINT ; \
-  wait $SERVER_PID
+  wait $WAIT_PID
 ```
